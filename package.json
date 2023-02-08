@@ -5,11 +5,21 @@
     "render": "vite build && node preview render",
     "static": "vite build && node preview static"
   },
+  "type": "module",
   "dependencies": {
+    "@notion-stuff/blocks-html-parser": "^6.0.0",
+    "@notion-stuff/blocks-markdown-parser": "^6.0.0",
+    "dotenv": "^16.0.3",
+    "lodash": "^4.17.21",
+    "nanoid": "^4.0.1",
+    "tslib": "^2.5.0",
+    "highlight.js": "^11.7.0",
+    "marked": "^4.2.12",
     "vite-plugin-ssr": "^0.4.16",
     "vue": "^3.2.37"
   },
   "devDependencies": {
+    "@notionhq/client": "^2.2.3",
     "@vitejs/plugin-vue": "^3.0.1",
     "chalk": "^4.1.2",
     "express": "^4.18.1",
