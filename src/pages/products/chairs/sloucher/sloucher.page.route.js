@@ -1,0 +1,1 @@
+export default '/products/chairs/sloucher/@sloucherId)}'

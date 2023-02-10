@@ -2,31 +2,29 @@ import * as dotenv from 'dotenv'
 import fs from 'fs'
 import { Client } from "@notionhq/client"
 // import NotionBlocksHtmlParser from '@notion-stuff/blocks-markdown-parser'
-import {NotionBlocksHtmlParser} from '@notion-stuff/blocks-html-parser'
-import {nanoid} from 'nanoid'
-
+import { NotionBlocksHtmlParser } from '@notion-stuff/blocks-html-parser'
+import { nanoid } from 'nanoid'
 import _ from 'lodash'
-import { sep } from 'path'
 
 Object.defineProperty(String.prototype, "slug", {
   get: function (separator = "-") {
-      return this
-          .toString()
-          .normalize('NFD')                   // split an accented letter in the base letter and the acent
-          .replace(/[\u0300-\u036f]/g, '')   // remove all previously split accents
-          .toLowerCase()
-          .trim()
-          .replace(/[^a-z0-9 ]/g, '')   // remove all chars not letters, numbers and spaces (to be replaced)
-          .replace(/\s+/g, separator);
-    }
+    return this
+      .toString()
+      .normalize('NFD')                   // split an accented letter in the base letter and the acent
+      .replace(/[\u0300-\u036f]/g, '')   // remove all previously split accents
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9 ]/g, '')   // remove all chars not letters, numbers and spaces (to be replaced)
+      .replace(/\s+/g, separator);
   }
+}
 )
 
 Object.defineProperty(String.prototype, "route", {
   get: function (separator = "/") {
-      return this.padStart(this.length+1, separator)
-    }
+    return this.padStart(this.length + 1, separator)
   }
+}
 )
 
 dotenv.config()
@@ -58,16 +56,16 @@ const getAuthorData = async (page) => {
   if (authorIds?.length) {
     authors = await Promise.all(
       authorIds.map(async (author) => await notion.users.retrieve({ user_id: author.id }))
-    ).then(res=>{
+    ).then(res => {
       if (res?.length) {
-      return res.map(author => author.name)
-    }})
+        return res.map(author => author.name)
+      }
+    })
   }
   return authors
 }
 
 const getPageContent = async (subPage) => {
-  // fetch page's 
   let page;
   if (subPage.object === 'page') {
     page = subPage
@@ -82,9 +80,14 @@ const getPageContent = async (subPage) => {
     page_size: 50,
   })
 
-  const coverImage = page && page?.cover?.external?.url || page?.cover?.file.url 
-
   const parsed = markdownParser.parse(pageContent.results)
+
+  const coverImageRegex = /<figure notion-figure>[\s\S]+<img[^>]*src=['|"](https?:\/\/[^'|"]+)(?:['|"])/
+
+  // Fall back to the first image in the page if one exists.
+
+  const coverImage = page && page?.cover?.external?.url || page?.cover?.file.url || parsed.match(coverImageRegex)?.[1]
+
 
   return {
     name: getBlockName(page).slug,
@@ -96,7 +99,7 @@ const getPageContent = async (subPage) => {
 
 const findKey = (object, key) => {
   let value;
-  Object.keys(object).some(function(k) {
+  Object.keys(object).some(function (k) {
     if (k === key) {
       value = object[k];
       return true;
@@ -111,8 +114,7 @@ const findKey = (object, key) => {
 
 const siteData = {}
 
-const fetchNotionData = async () => {
-  const dbId = 'df3f51f5-daa7-4d28-90da-ece89281778d';
+const fetchNotionData = async (dbId) => {
   const db = await notion.databases.query({
     database_id: dbId,
   });
@@ -121,7 +123,7 @@ const fetchNotionData = async () => {
 
   const findInPending = (entry, pendingEntries) => {
     let match
-    pendingEntries.forEach(pendingEntry=>{
+    pendingEntries.forEach(pendingEntry => {
       if (entry === pendingEntry.entry) {
         match = pendingEntry
       }
@@ -132,7 +134,7 @@ const fetchNotionData = async () => {
   const addSubPage = async (entry) => {
     const parent = entry.properties['parent-page'].relation[0]
     // how to avoid this async call? It causes the process to take quite a long time.
-    const parentPage = await notion.pages.retrieve({page_id: parent.id})
+    const parentPage = await notion.pages.retrieve({ page_id: parent.id })
     const parentName = getBlockName(parentPage).slug.route
     const updateKey = findKey(siteData, parentName)
 
@@ -161,7 +163,7 @@ const fetchNotionData = async () => {
   for await (const entry of db.results) {
     if (isTopLevelDir(entry)) {
       const content = await getPageContent(entry)
-      const currentDir = siteData[getBlockName(entry).slug.route] = {...content}
+      const currentDir = siteData[getBlockName(entry).slug.route] = { ...content }
       if (entry.properties['sub-page'].relation.length) {
         for await (const subPage of entry.properties['sub-page'].relation) {
           const content = await getPageContent(subPage)
@@ -182,6 +184,9 @@ const fetchNotionData = async () => {
   }
   console.log('complete')
   fs.writeFileSync('debug/site-date.json', JSON.stringify(siteData))
+  return siteData
 }
 
-fetchNotionData()
+export default fetchNotionData
+
+// fetchNotionData()

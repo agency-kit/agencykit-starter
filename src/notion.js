@@ -26,22 +26,22 @@ const fetchDatabase = async(db) => {
 
 const fetchPageContent = async (page, directory) => {
   // get page content 
-  const pageContent = await notion.blocks.children.list({
-    block_id: page.id,
-    page_size: 50,
-  })
+  // const pageContent = await notion.blocks.children.list({
+  //   block_id: page.id,
+  //   page_size: 50,
+  // })
 
-  const authorIds = page.properties?.Author?.people
-  let authors;
- if (authorIds?.length) {
-  authors = await Promise.all(
-    authorIds.map(async (author) => await notion.users.retrieve({ user_id: author.id }))
-  ).then(res=>{
-    if (res?.length) {
-      return res.map(author => author.name)
-    }
-  })
- }
+//   const authorIds = page.properties?.Author?.people
+//   let authors;
+//  if (authorIds?.length) {
+//   authors = await Promise.all(
+//     authorIds.map(async (author) => await notion.users.retrieve({ user_id: author.id }))
+//   ).then(res=>{
+//     if (res?.length) {
+//       return res.map(author => author.name)
+//     }
+//   })
+//  }
 
   // const codeblockPairs = []
     await Promise.all(

@@ -1,0 +1,1 @@
+export default '/services/service-1/@service1Id)}'

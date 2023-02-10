@@ -1,0 +1,1 @@
+export default '/posts/post-b/@postBId)}'
