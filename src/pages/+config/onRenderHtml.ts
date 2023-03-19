@@ -1,0 +1,1 @@
+export {onRenderHtml as default} from './agencykit'

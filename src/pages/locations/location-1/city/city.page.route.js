@@ -1,1 +1,0 @@
-export default '/locations/location-1/city/@cityId)}'

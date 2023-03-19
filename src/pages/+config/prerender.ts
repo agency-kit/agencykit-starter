@@ -1,0 +1,1 @@
+export {prerender as default} from './agencykit'

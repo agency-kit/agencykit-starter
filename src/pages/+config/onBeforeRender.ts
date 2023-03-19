@@ -1,0 +1,1 @@
+export {onBeforeRender as default} from './agencykit'
